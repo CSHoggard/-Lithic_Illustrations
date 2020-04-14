@@ -1,0 +1,790 @@
+---
+title: '**Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses**'
+author: <h4 style="font-style:normal"> Christian Steven Hoggard, Thomas Birch, Cory
+  Marie Stade, Katrien Janin and Felix Riede </h4>
+output:
+  html_document: default
+  word_document: default
+  pdf_document: default
+---
+<style>
+body {
+text-align: justify}
+</style>
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+  
+### **Abstract**  
+
+Illustrations of lithic artefacts are an abundant source of morphological and technological information for those interested in our human past. As a typical part of archaeological reports and publications, lithic drawings are - or have to be - trusted as faithful reproductions of the selected artefacts. Despite the considerable epistemic work lithic illustrations (and illustrators) are expected to do, usually little information is available regarding the illustrator's technical skill; thus, it remains unknown whether drawings produced by illustrators of differing technical skill are comparable or produce images of equal analytical potential to other media, e.g. photographs. The issue of lithic illustration accuracy is brought to the fore by the recent emergence of geometric morphometric approaches as innovative and powerful ways of describing and analysing complex shapes, as lithic illustrations provide one of the key sources for such analyses. Motivated by these issues, we present an experiment investigating the degree of error observed in illustrations of differing technical illustrative skill. Analyses suggest that lithic illustrations produced by individuals with a variety of experience in drawing lithics create, in the majority of instances, equally faithful representations (in outline shape) of chipped stone artefacts. With error observed in a small number of instances, archaeologists are still urged to be critical of an illustration's source prior to lineal and geometric morphometric methodologies. Despite this, archaeologists can be confident in their exactitude and we remain strong advocates in favour of lithic illustrations as a readily available legacy resource for morphometric analyses.
+  
+  
+### **Introduction**  
+
+This is a R Markdown documented associated with the article *Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses*, an original research article for *Archaeological and Anthropological Sciences* (https://link.springer.com/journal/12520). This Markdown document details the analytical procedure used throughout the article, from data importing and the packages used, to the univariate and multivariate framework underpinning the article's findings. 
+
+### **Pre-requisite data**  
+
+For this markdown, the following files are necessary:   
+1. **Hoggard_et_al_2019.r** (the r script which this .rmd accompanies)    
+2. **elongated.tps** (the raw landmark data file for elongated artefacts)    
+3. **handaxe.tps** (the raw landmark data file for handaxe artefacts)  
+4. **tanged.tps** (the raw landmark data file for tanged artefacts)  
+5. **elongated.csv** (metadata for all elongated artefacts)  
+6. **handaxe.csv** (metadata for all handaxe artefacts)  
+7. **tanged.csv**  (metadata for all tanged artefacts)  
+8. **measurement_data.csv** (the raw measurement data for all artefacts)  
+9. **digitisation_error.tps** (the raw landmark data file for digitisation error)  
+10. **digitisation_error.csv** (metadata for digitisation error)  
+11. **measurement_error.csv** (the measurement data for digitisation error)  
+12. **curveslide.csv** (the table of links for all landmarks)  
+
+A copy of all files can also be found on the Open Science Framework (OSF) project page [https://osf.io/xtghn/].  
+
+### **Stage 1: Package installation and data extraction**  
+
+For this article, seven packages are required:  
+1. **psych v.1.8.12**  https://cran.r-project.org/web/packages/psych/index.html  
+2. **geomorph v.3.1.2** https://cran.r-project.org/web/packages/geomorph/index.html  
+3. **tidyverse v.1.2.1** [https://cran.r-project.org/web/packages/tidyverse/index.html]   
+4. **vegan v.2.5-4** [https://cran.r-project.org/web/packages/vegan/index.html]    
+5. **MASS v.7.3-51.4** [https://cran.r-project.org/web/packages/MASS/index.html]   
+6. **cowplot v.0.9.3** [https://cran.r-project.org/web/packages/cowplot/index.html]  
+7. **ggpubr v.0.9.3**  https://cran.r-project.org/web/packages/ggpubr/index.html  
+
+The latest versions of each package can be installed and sourced through the following code:    
+
+```{r, echo = TRUE, eval = FALSE}
+if(!require("psych")) install.packages('psych', repos='http://cran.us.r-project.org')
+if(!require("geomorph")) install.packages('geomorph', repos='http://cran.us.r-project.org')
+if(!require("tidyverse")) install.packages('tidyverse', repos='http://cran.us.r-project.org')
+if(!require("vegan")) install.packages('vegan', repos='http://cran.us.r-project.org')
+if(!require("MASS")) install.packages('MASS', repos='http://cran.us.r-project.org')
+if(!require("cowplot")) install.packages('cowplot', repos='http://cran.us.r-project.org')
+if(!require("ggpubr")) install.packages('ggpubr', repos='http://cran.us.r-project.org')
+
+```
+
+Should specific functions become outdated then please refer to the package versions as cited above. Once all files are downloaded from the supplementary file or from the OSF project page, and a working directory (with these files) configured, insert these files into R/RStudio through the following code:  
+
+```{r, echo = TRUE, eval = FALSE}
+landmarks_elongated   <- readland.tps("elongated.tps", readcurves = TRUE) #all specimens (elongated)
+landmarks_tanged      <- readland.tps("tanged.tps", readcurves = TRUE) #all specimens (tanged)
+landmarks_handaxe     <- readland.tps("handaxe.tps", readcurves = TRUE) #all specimens (handaxe)
+
+shape_data_elongated <- read.csv("elongated.csv", header = TRUE, row.names = 1) #metadata (elongated)
+shape_data_elongated$Artefact <- as.factor(shape_data_elongated$Artefact) #convert from numeric to factor
+
+shape_data_tanged <- read.csv("tanged.csv", header = TRUE, row.names = 1) #metadata (elongated)
+shape_data_tanged$Artefact <- as.factor(shape_data_tanged$Artefact) #convert from numeric to factor
+
+shape_data_handaxe <- read.csv("handaxe.csv", header = TRUE, row.names = 1) #metadata (elongated)
+shape_data_handaxe$Artefact <- as.factor(shape_data_handaxe$Artefact) #convert from numeric to factor
+
+shape_data_sliders <- read.csv("curveslide.csv", header = TRUE) #landmark sliding matrix
+
+metric_data <- read.csv("measurement_data.csv", header = TRUE, row.names = 1) #metric data (all specimens)
+metric_data$Artefact <- as.factor(metric_data$Artefact) #convert from numeric to factor
+
+digitisation_error_landmarks  <- readland.tps("digitisation_error.tps", readcurves = TRUE) #digitisation error
+digitisation_error_landmarks_data <- read.csv("digitisation_error.csv", header = TRUE, row.names = 1) #metadata
+
+digitisation_error_metrics  <- read.csv("measurement_error.csv", header = TRUE, row.names = 1) #measurement error
+digitisation_error_metrics$Attempt <- as.factor(digitisation_error_metrics$Attempt) #convert from numeric to factor
+```  
+  
+### **Stage 2: Quantifying and measuring digitisation and measurement error**  
+  
+### **Stage 2A: Digitisation and Landmark Error**  
+
+The following code was necessary to calculate error associated with the digitisation of landmarks through a Procrustes ANOVA (see within the article for further information on the experimental setup).  
+
+```{r, echo = TRUE, eval = FALSE}
+gpa_digi_error <- gpagen(digitisation_error_landmarks, Proj = TRUE, curves =  shape_data_sliders, ProcD = TRUE, surfaces = NULL) #formulates a generalised procrustes analysis (GPA) file for digitised repeated specimens
+gpa_digi_error #calls the landmark configuration (GPA) created through the gpagen function
+plot(gpa_digi_error) #visualises the landmark configuration
+
+gpa_digi_error_df <- geomorph.data.frame(gpa_digi_error, attempt = digitisation_error_landmarks_data$Attempt)
+gpaprocD <- procD.lm(coords ~ attempt, data = gpa_digi_error_df) #ANOVA (coordinates vs. attempt)
+summary(gpaprocD) #summary
+gpaprocD$aov.table$SS[1]/gpaprocD$aov.table$SS[3]*100 #error expressed as a percentage (8.599812%)
+```
+  
+### **Stage 2B: Measurement Error**
+
+To calculate error associated with lineal measurements (through fractional uncertainity) the following code was designed:  
+
+```{r, echo = TRUE, eval = FALSE}
+head(digitisation_error_metrics) 
+statsl  <- describe(digitisation_error_metrics$Length_mm) #descriptive statistics
+statsw  <- describe(digitisation_error_metrics$Width_mm) #descriptive statistics
+statssf <- describe(digitisation_error_metrics$Scale_Factor) #descriptive statistics
+
+(statsl$se/statsl$mean)   * 100 #fractional uncertainity (length)
+(statsw$se/statsw$mean)   * 100 #fractional uncertainity (width)
+(statssf$se/statssf$mean) * 100 #fractional uncertainity (scale factor: as calibrated through tpsDig2)
+```
+ 
+### **Stage 3: Generalised Procrustes Analysis (GPA)**
+
+Each artefact class was subject to a GPA using the *gpagen* function in geomorph (as above):
+
+```{r, echo = TRUE, eval = FALSE}
+gpa_elongated <- gpagen(landmarks_elongated, Proj = TRUE, ProcD = TRUE, curves = shape_data_sliders, surfaces = NULL) #GPA (Procrustes distance criterion): all elongated artefacts
+gpa_elongated$coords #Procrustes coordinates for all elongated artefacts
+plot(gpa_elongated) #Plots the procrustes coordinates for all elongated artefacts
+
+gpa_tanged    <- gpagen(landmarks_tanged, Proj = TRUE, ProcD = TRUE, curves = shape_data_sliders, surfaces = NULL) #GPA (Procrustes distance criterion): all tanged artefacts
+gpa_tanged$coords #Procrustes coordinates for all tanged artefacts
+plot(gpa_tanged) #Plots the procrustes coordinates for all tanged artefacts
+
+gpa_handaxe   <- gpagen(landmarks_handaxe, Proj = TRUE, ProcD = TRUE, curves = shape_data_sliders, surfaces = NULL) #GPA (Procrustes distance criterion): all handaxe artefacts
+gpa_handaxe$coords #Procrustes coordinates for all handaxe artefacts
+plot(gpa_handaxe) #Plots the procrustes coordinates for all handaxe artefacts
+```
+
+### **Stage 4: Exploratory Analysis through Principal Component Analysis (PCA)**
+
+Individual PCAs for all artefact classes were created, to visualise diffences in illustration skill between and within the different artefacts. PCAs were made in geomorph, through the *plotTangentSpace* function, before being exported and modified (for better visualisation) in ggplot. Note: specific shape differences can be calculated through the created files.
+
+```{r, echo = TRUE, eval = FALSE}
+pca_elongated <- plotTangentSpace(gpa_elongated$coords, cex = 2, warpgrids = FALSE, groups = shape_data_tanged$Artefact, verbose = TRUE) #PCA (geomorph layout)
+pca_elongated$pc.summary #PCA summary
+elongated_ds <- cbind(shape_data_elongated, pca_elongated$pc.scores) #ggplot compatible format
+
+pca_tanged <- plotTangentSpace(gpa_tanged$coords, warpgrids = FALSE, groups = shape_data_tanged$Artefact, verbose = TRUE) #PCA (geomorph layout)
+pca_tanged$pc.summary #PCA summary
+tanged_ds <- cbind(shape_data_tanged, pca_tanged$pc.scores) #ggplot compatible format
+
+pca_handaxe <- plotTangentSpace(gpa_handaxe$coords, warpgrids = FALSE, groups = shape_data_handaxe$Artefact, verbose = TRUE) #PCA (geomorph layout)
+pca_handaxe$pc.summary #PCA summary
+handaxe_ds <- cbind(shape_data_handaxe, pca_handaxe$pc.scores) #ggplot compatible format
+
+figure_5 <- ggplot(data = elongated_ds) + 
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 2) + 
+  labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/skill", colour = "Artefact") + 
+  scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
+  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() #Figure 5 creation
+
+figure_6 <- ggplot(data = tanged_ds) + 
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 2) + 
+  labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/skill", colour = "Artefact") + 
+  scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
+  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() #Figure 6 creation
+
+figure_7 <- ggplot(data = handaxe_ds) + 
+  geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 2) + 
+  labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/skill", colour = "Artefact") + 
+  scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
+  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() #Figure 7 creation
+
+ggsave("Fig5.tiff", plot = figure_5, dpi = 400, units = "mm", height = 150, width = 175) #Export Figure 5
+ggsave("Fig6.tiff", plot = figure_6, dpi = 400, units = "mm", height = 150, width = 175) #Export Figure 6
+ggsave("Figure_7.tiff", plot = figure_7, dpi = 400, units = "mm", height = 150, width = 175) #Export Figure 7
+
+```
+
+### **Stage 5: Further analysis (MANOVA and Discriminant Analysis)**
+
+Each individual artefact (and the collections of drawings for each artefact) was then analysed to examine whether differences in illustrator skill were observed. This was first done through a Procrustes ANOVA, providing a statistical framework for detecting any such difference. Discriminant analyses were then conducted for each artefact to test for between-group variance. The code for each artefact follows this order:  
+
+1) **Extraction of coordinates (for a particular artefact) from the data frame**  
+2) **Creation of a geomorph-specific data frame (through *geomorph.data.frame*) with shape defined by the above coordinates and class extracted from the .csv file**  
+3) **Check through calling df_xxxxxx_n**  
+4) **Creation of the Procrustes ANOVA through the *procD.lm* function**  
+5) **Summary of results through the *summary* function**  
+6) **Creation of a data frame with the class and scores (in a format other than geomorph)**  
+7) **Discriminant analysis through the *lda* function**  
+8) **Creation of a LDA graph in ggplot**    
+
+
+```{r, echo = TRUE, eval = FALSE}
+elongated1 <- gpa_elongated$coords[, , 1:18] 
+df_elongated1 <- geomorph.data.frame(shape = elongated1, class = shape_data_elongated$Class[1:18], artefact = shape_data_elongated$Artefact[1:18]) 
+df_elongated1 
+E1 <- procD.lm(shape ~ class, data = df_elongated1) 
+summary(E1) 
+
+elongated1pcs <- as.data.frame(pca_elongated$pc.scores[1:18, 1:10])
+elongated1class <- shape_data_elongated$Class[1:18] 
+elongated1pcs <- cbind(elongated1pcs, elongated1class)
+elongated1pcs <- rename(elongated1pcs, Class = elongated1class)
+elongated1lda <- lda(Class ~ ., data = elongated1pcs)
+elongated1ldapredict <- predict(elongated1lda) 
+elongated1ldaplot <- cbind(elongated1ldapredict$x[, 1:3], elongated1pcs) 
+elongated1ldaplotggplot <- ggplot(elongated1ldaplot, aes(LD1, LD2)) + 
+  geom_point(aes(shape = Class), size = 2) + 
+  labs(x = "LDA 1", y = "LDA 2") + 
+  scale_shape_manual(values=c(17,15,3,16)) + 
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(),  axis.title.y = element_text(size = 6), legend.position = "none",  axis.title.x = element_text(size = 6))
+
+elongated2 <- gpa_elongated$coords[, , 19:36]
+df_elongated2 <- geomorph.data.frame(shape = elongated2, class = shape_data_elongated$Class[19:36], artefact = shape_data_elongated$Artefact[19:36])
+df_elongated2
+E2 <- procD.lm(shape ~ class, data = df_elongated2)
+summary(E2)
+ 
+elongated2pcs <- as.data.frame(pca_elongated$pc.scores[19:36, 1:10])
+elongated2class <- shape_data_elongated$Class[19:36]
+elongated2pcs <- cbind(elongated2pcs, elongated2class)
+elongated2pcs <- rename(elongated2pcs, Class = elongated2class)
+elongated2lda <- lda(Class ~ ., elongated2pcs)
+elongated2ldapredict <- predict(elongated2lda)
+elongated2ldaplot <- cbind(elongated2ldapredict$x[, 1:3], elongated2pcs)
+elongated2ldaplotggplot <- ggplot(elongated2ldaplot, aes(LD1, LD2)) + 
+  geom_point(aes(shape = Class), size = 2) + 
+  labs(x = "LDA 1", y = "LDA 2") + 
+  scale_shape_manual(values=c(17,15,3,16)) + 
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+elongated3 <- gpa_elongated$coords[, , 37:54]
+df_elongated3 <- geomorph.data.frame(shape = elongated3, class = shape_data_elongated$Class[37:54], artefact = shape_data_elongated$Artefact[37:54])
+df_elongated3
+E3 <- procD.lm(shape ~ class, data = df_elongated3)
+summary(E3) 
+
+elongated3pcs <- as.data.frame(pca_elongated$pc.scores[37:54, 1:10])
+elongated3class <- shape_data_elongated$Class[37:54]
+elongated3pcs <- cbind(elongated3pcs, elongated3class)
+elongated3pcs <- rename(elongated3pcs, Class = elongated3class)
+elongated3lda <- lda(Class ~ ., elongated3pcs)
+elongated3ldapredict <- predict(elongated3lda)
+elongated3ldaplot <- cbind(elongated3ldapredict$x[, 1:3], elongated3pcs)
+elongated3ldaplotggplot <- ggplot(elongated3ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+elongated4 <- gpa_elongated$coords[, , 55:72]
+df_elongated4 <- geomorph.data.frame(shape = elongated4, class = shape_data_elongated$Class[55:72], artefact = shape_data_elongated$Artefact[55:72])
+df_elongated4
+E4 <- procD.lm(shape ~ class, data = df_elongated4)
+summary(E4)
+
+elongated4pcs <- as.data.frame(pca_elongated$pc.scores[55:72, 1:10])
+elongated4class <- shape_data_elongated$Class[55:72]
+elongated4pcs <- cbind(elongated4pcs, elongated4class)
+elongated4pcs <- rename(elongated4pcs, Class = elongated4class)
+elongated4lda <- lda(Class ~ ., elongated4pcs)
+elongated4ldapredict <- predict(elongated4lda)
+elongated4ldaplot <- cbind(elongated4ldapredict$x[, 1:3], elongated4pcs)
+elongated4ldaplotggplot <- ggplot(elongated4ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+elongated5 <- gpa_elongated$coords[, , 73:90] 
+df_elongated5 <- geomorph.data.frame(shape = elongated5, class = shape_data_elongated$Class[73:90], artefact = shape_data_elongated$Artefact[73:90]) 
+df_elongated5
+E5 <- procD.lm(shape ~ class, data = df_elongated5)
+summary(E5)
+
+elongated5pcs <- as.data.frame(pca_elongated$pc.scores[73:90, 1:10])
+elongated5class <- shape_data_elongated$Class[73:90]
+elongated5pcs <- cbind(elongated5pcs, elongated5class)
+elongated5pcs <- rename(elongated5pcs, Class = elongated5class)
+elongated5lda <- lda(Class ~ ., elongated5pcs)
+elongated5ldapredict <- predict(elongated5lda)
+elongated5ldaplot <- cbind(elongated5ldapredict$x[, 1:3], elongated5pcs)
+elongated5ldaplotggplot <- ggplot(elongated5ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+tanged1 <- gpa_tanged$coords[, , 1:18]
+df_tanged1 <- geomorph.data.frame(shape = tanged1, class = shape_data_tanged$Class[1:18], artefact = shape_data_tanged$Artefact[1:18])
+df_tanged1
+T1 <- procD.lm(shape ~ class, data = df_tanged1)
+summary(T1) 
+
+tanged1pcs <- as.data.frame(pca_tanged$pc.scores[1:18, 1:10])
+tanged1class <- shape_data_tanged$Class[1:18]
+tanged1pcs <- cbind(tanged1pcs, tanged1class)
+tanged1pcs <- rename(tanged1pcs, Class = tanged1class)
+tanged1lda <- lda(Class ~ ., tanged1pcs)
+tanged1ldapredict <- predict(tanged1lda)
+tanged1ldaplot <- cbind(tanged1ldapredict$x[, 1:3], tanged1pcs)
+tanged1ldaplotggplot <- ggplot(tanged1ldaplot, aes(LD1, LD2)) + 
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+tanged2 <- gpa_tanged$coords[, , 19:36]
+df_tanged2 <- geomorph.data.frame(shape = tanged2, class = shape_data_tanged$Class[19:36], artefact = shape_data_tanged$Artefact[19:36])
+df_tanged2
+T2 <- procD.lm(shape ~ class, data = df_tanged2)
+summary(T2)
+
+tanged2pcs <- as.data.frame(pca_tanged$pc.scores[19:36, 1:10])
+tanged2class <- shape_data_tanged$Class[19:36]
+tanged2pcs <- cbind(tanged2pcs, tanged2class)
+tanged2pcs <- rename(tanged2pcs, Class = tanged2class)
+tanged2lda <- lda(Class ~ ., tanged2pcs)
+tanged2ldapredict <- predict(tanged2lda)
+tanged2ldaplot <- cbind(tanged2ldapredict$x[, 1:3], tanged2pcs)
+tanged2ldaplotggplot <- ggplot(tanged2ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+tanged3 <- gpa_tanged$coords[, , 37:54] 
+df_tanged3 <- geomorph.data.frame(shape = tanged3, class = shape_data_tanged$Class[37:54], artefact = shape_data_tanged$Artefact[37:54])
+df_tanged3
+T3 <- procD.lm(shape ~ class, data = df_tanged3)
+summary(T3)
+
+tanged3pcs <- as.data.frame(pca_tanged$pc.scores[37:54, 1:10])
+tanged3class <- shape_data_tanged$Class[37:54]
+tanged3pcs <- cbind(tanged3pcs, tanged3class)
+tanged3pcs <- rename(tanged3pcs, Class = tanged3class)
+tanged3lda <- lda(Class ~ ., tanged3pcs)
+tanged3ldapredict <- predict(tanged3lda)
+tanged3ldaplot <- cbind(tanged3ldapredict$x[, 1:3], tanged3pcs)
+tanged3ldaplotggplot <- ggplot(tanged3ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+tanged4 <- gpa_tanged$coords[, , 55:72]
+df_tanged4 <- geomorph.data.frame(shape = tanged4, class = shape_data_tanged$Class[55:72], artefact = shape_data_tanged$Artefact[55:72])
+df_tanged4
+T4 <- procD.lm(shape ~ class, data = df_tanged4)
+summary(T4)
+
+tanged4pcs <- as.data.frame(pca_tanged$pc.scores[55:72, 1:10])
+tanged4class <- shape_data_tanged$Class[55:72]
+tanged4pcs <- cbind(tanged4pcs, tanged4class)
+tanged4pcs <- rename(tanged4pcs, Class = tanged4class)
+tanged4lda <- lda(Class ~ ., tanged4pcs)
+tanged4ldapredict <- predict(tanged4lda)
+tanged4ldaplot <- cbind(tanged4ldapredict$x[, 1:3], tanged4pcs)
+tanged4ldaplotggplot <- ggplot(tanged4ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+tanged5 <- gpa_tanged$coords[, , 73:90]
+df_tanged5 <- geomorph.data.frame(shape = tanged5, class = shape_data_tanged$Class[73:90], artefact = shape_data_tanged$Artefact[73:90])
+df_tanged5
+T5 <- procD.lm(shape ~ class, data = df_tanged5)
+summary(T5)
+
+tanged5pcs <- as.data.frame(pca_tanged$pc.scores[73:90, 1:10])
+tanged5class <- shape_data_tanged$Class[73:90]
+tanged5pcs <- cbind(tanged5pcs, tanged5class)
+tanged5pcs <- rename(tanged5pcs, Class = tanged5class)
+tanged5lda <- lda(Class ~ ., tanged5pcs)
+tanged5ldapredict <- predict(tanged5lda)
+tanged5ldaplot <- cbind(tanged5ldapredict$x[, 1:3], tanged5pcs)
+tanged5ldaplotggplot <- ggplot(tanged5ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") + scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+handaxe1 <- gpa_handaxe$coords[, , 1:18]
+df_handaxe1 <- geomorph.data.frame(shape = handaxe1, class = shape_data_handaxe$Class[1:18], artefact = shape_data_handaxe$Artefact[1:18])
+df_handaxe1
+H1 <- procD.lm(shape ~ class, data = df_handaxe1)
+summary(H1)
+
+handaxe1pcs <- as.data.frame(pca_handaxe$pc.scores[1:18, 1:10])
+handaxe1class <- shape_data_handaxe$Class[1:18]
+handaxe1pcs <- cbind(handaxe1pcs, handaxe1class)
+handaxe1pcs <- rename(handaxe1pcs, Class = handaxe1class)
+handaxe1lda <- lda(Class ~ ., handaxe1pcs)
+handaxe1ldapredict <- predict(handaxe1lda)
+handaxe1ldaplot <- cbind(handaxe1ldapredict$x[, 1:3], handaxe1pcs)
+handaxe1ldaplotggplot <- ggplot(handaxe1ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") + scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+handaxe2 <- gpa_handaxe$coords[, , 19:36]
+df_handaxe2 <- geomorph.data.frame(shape = handaxe2, class = shape_data_handaxe$Class[19:36], artefact = shape_data_handaxe$Artefact[19:36])
+df_handaxe2
+H2 <- procD.lm(shape ~ class, data = df_handaxe2)
+summary(H2)
+
+handaxe2pcs <- as.data.frame(pca_handaxe$pc.scores[19:36, 1:10]) 
+handaxe2class <- shape_data_handaxe$Class[19:36]
+handaxe2pcs <- cbind(handaxe2pcs, handaxe2class)
+handaxe2pcs <- rename(handaxe2pcs, Class = handaxe2class)
+handaxe2lda <- lda(Class ~ ., handaxe2pcs)
+handaxe2ldapredict <- predict(handaxe2lda)
+handaxe2ldaplot <- cbind(handaxe2ldapredict$x[, 1:3], handaxe2pcs)
+handaxe2ldaplotggplot <- ggplot(handaxe2ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+handaxe3 <- gpa_handaxe$coords[, , 37:54]
+df_handaxe3 <- geomorph.data.frame(shape = handaxe3, class = shape_data_handaxe$Class[37:54], artefact = shape_data_handaxe$Artefact[37:54])
+df_handaxe3
+H3 <- procD.lm(shape ~ class, data = df_handaxe3)
+summary(H3)
+
+handaxe3pcs <- as.data.frame(pca_handaxe$pc.scores[37:54, 1:10])
+handaxe3class <- shape_data_handaxe$Class[37:54]
+handaxe3pcs <- cbind(handaxe3pcs, handaxe3class)
+handaxe3pcs <- rename(handaxe3pcs, Class = handaxe3class)
+handaxe3lda <- lda(Class ~ ., handaxe3pcs)
+handaxe3ldapredict <- predict(handaxe3lda)
+handaxe3ldaplot <- cbind(handaxe3ldapredict$x[, 1:3], handaxe3pcs)
+handaxe3ldaplotggplot <- ggplot(handaxe3ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") + scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+handaxe4 <- gpa_handaxe$coords[, , 55:72] 
+df_handaxe4 <- geomorph.data.frame(shape = handaxe4, class = shape_data_handaxe$Class[55:72], artefact = shape_data_handaxe$Artefact[55:72]) 
+df_handaxe4 
+H4 <- procD.lm(shape ~ class, data = df_handaxe4) 
+summary(H4)
+
+handaxe4pcs <- as.data.frame(pca_handaxe$pc.scores[55:72, 1:10]) #95% CUMULATIVE SHAPE VARIANCE
+handaxe4class <- shape_data_handaxe$Class[55:72]
+handaxe4pcs <- cbind(handaxe4pcs, handaxe4class)
+handaxe4pcs <- rename(handaxe4pcs, Class = handaxe4class)
+handaxe4lda <- lda(Class ~ ., handaxe4pcs)
+handaxe4ldapredict <- predict(handaxe4lda)
+handaxe4ldaplot <- cbind(handaxe4ldapredict$x[, 1:3], handaxe4pcs)
+handaxe4ldaplotggplot <- ggplot(handaxe4ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+handaxe5 <- gpa_handaxe$coords[, , 73:90]
+df_handaxe5 <- geomorph.data.frame(shape = handaxe5, class = shape_data_handaxe$Class[73:90], artefact = shape_data_handaxe$Artefact[73:90])
+df_handaxe5
+H5 <- procD.lm(shape ~ class, data = df_handaxe5)
+summary(H5)
+
+handaxe5pcs <- as.data.frame(pca_handaxe$pc.scores[73:90, 1:10])
+handaxe5class <- shape_data_handaxe$Class[73:90]
+handaxe5pcs <- cbind(handaxe5pcs, handaxe5class)
+handaxe5pcs <- rename(handaxe5pcs, Class = handaxe5class)
+handaxe5lda <- lda(Class ~ ., handaxe5pcs)
+handaxe5ldapredict <- predict(handaxe5lda)
+handaxe5ldaplot <- cbind(handaxe5ldapredict$x[, 1:3], handaxe5pcs)
+handaxe5ldaplotggplot <- ggplot(handaxe5ldaplot, aes(LD1, LD2)) +
+  geom_point(aes(shape = Class), size = 2) +
+  labs(x = "LDA 1", y = "LDA 2") +
+  scale_shape_manual(values=c(17,15,3,16)) +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none",  axis.title.y = element_text(size = 6),  axis.title.x = element_text(size = 6))
+
+plot_grid(elongated1ldaplotggplot, elongated2ldaplotggplot, elongated3ldaplotggplot, elongated4ldaplotggplot, elongated5ldaplotggplot, tanged1ldaplotggplot, tanged2ldaplotggplot, tanged3ldaplotggplot, tanged4ldaplotggplot, tanged5ldaplotggplot, handaxe1ldaplotggplot, handaxe2ldaplotggplot, handaxe3ldaplotggplot, handaxe4ldaplotggplot, handaxe5ldaplotggplot, ncol = 5, align = 'v')
+
+```
+  
+  
+### **Stage 6: Measurement Data (Exploratory Framework)**
+
+Bivariate plots for all three artefact groups were generated in ggplot through the below code:
+
+```{r, echo = TRUE, eval = FALSE}
+metric_data_elongated <- metric_data[which(metric_data$Type=="Elongated"),]
+metric_data_handaxe   <- metric_data[which(metric_data$Type=="Handaxe"),]
+metric_data_tanged    <- metric_data[which(metric_data$Type=="Tanged"),]
+
+figure_8a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+  geom_point() + 
+  facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
+  labs(x = "Length (mm)", y = "Width (mm)") + 
+  scale_shape_manual(values=c(17,15,3,16)) + 
+  theme_minimal() +
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none")
+figure_8b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) + 
+  geom_point() + 
+  facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
+  labs(x = "Length (mm)", y = "Width (mm)") +  
+  scale_shape_manual(values=c(17,15,3,16)) + 
+  theme_minimal() + 
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none")
+figure_8c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+  geom_point() + 
+  facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
+  labs(x = "Length (mm)", y = "Width (mm)") +  
+  scale_shape_manual(values=c(17,15,3,16)) +  
+  theme_minimal() + 
+  theme(axis.text.x = element_blank(), axis.text.y = element_blank(), legend.position = "none")
+
+figure_8 <- plot_grid(figure_8a, figure_8b, figure_8c, labels= "AUTO", ncol = 1, align = 'v') 
+plot(figure_8)
+
+ggsave("Figure_8.tiff", plot = last_plot(), dpi = 400, units = "mm", height = 250, width = 200)
+
+```
+  
+### **Stage 7: Measurement Data (Analytical Framework)**
+
+```{r, echo = TRUE, eval = FALSE}
+
+metric_data_elongated <- arrange(metric_data_elongated, Artefact, Class)
+
+metric_data_elongated[1:18,]  %>% 
+  group_by(Class) %>% 
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[1:18,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>% 
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[19:36,] %>% 
+  group_by(Class) %>% 
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[19:36,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[37:54,] %>% 
+  group_by(Class) %>% 
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[37:54,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>% 
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[55:72,] %>% 
+  group_by(Class) %>% 
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[55:72,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>% 
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[73:90,] %>% 
+  group_by(Class) %>% 
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_elongated[73:90,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>% 
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+shapiro.test(metric_data_elongated$Length_mm[2:4])
+shapiro.test(metric_data_elongated$Width_mm[2:4])
+shapiro.test(metric_data_elongated$Length_mm[5:17]) 
+shapiro.test(metric_data_elongated$Width_mm[5:17])
+shapiro.test(metric_data_elongated$Length_mm[20:22])
+shapiro.test(metric_data_elongated$Width_mm[20:22]) 
+shapiro.test(metric_data_elongated$Length_mm[23:35])
+shapiro.test(metric_data_elongated$Width_mm[23:35])
+shapiro.test(metric_data_elongated$Length_mm[38:40]) 
+shapiro.test(metric_data_elongated$Width_mm[38:40]) 
+shapiro.test(metric_data_elongated$Length_mm[41:53])
+shapiro.test(metric_data_elongated$Width_mm[41:53])
+shapiro.test(metric_data_elongated$Length_mm[56:58])
+shapiro.test(metric_data_elongated$Width_mm[56:58])
+shapiro.test(metric_data_elongated$Length_mm[59:71])
+shapiro.test(metric_data_elongated$Width_mm[59:71])
+shapiro.test(metric_data_elongated$Length_mm[74:76])
+shapiro.test(metric_data_elongated$Width_mm[74:76])
+shapiro.test(metric_data_elongated$Length_mm[77:89])
+shapiro.test(metric_data_elongated$Width_mm[77:89])
+
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[1:18,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[1:18,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[19:36,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[19:36,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[37:54,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[37:54,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[55:72,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[55:72,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[73:90,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_elongated[73:90,]))
+
+metric_data_handaxe <- arrange(metric_data_handaxe, Artefact, Class)
+
+metric_data_handaxe[1:18,]  %>% 
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>% 
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[1:18,]  %>% 
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>% 
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[19:36,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[19:36,]  %>% filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[37:54,] %>% 
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[37:54,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[55:72,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[55:72,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[73:90,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_handaxe[73:90,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+shapiro.test(metric_data_handaxe$Length_mm[2:4])
+shapiro.test(metric_data_handaxe$Width_mm[2:4])
+shapiro.test(metric_data_handaxe$Length_mm[5:17])
+shapiro.test(metric_data_handaxe$Width_mm[5:17])
+shapiro.test(metric_data_handaxe$Length_mm[20:22])
+shapiro.test(metric_data_handaxe$Width_mm[20:22])
+shapiro.test(metric_data_handaxe$Length_mm[23:35])
+shapiro.test(metric_data_handaxe$Width_mm[23:35])
+shapiro.test(metric_data_handaxe$Length_mm[38:40])
+shapiro.test(metric_data_handaxe$Width_mm[38:40])
+shapiro.test(metric_data_handaxe$Length_mm[41:53])
+shapiro.test(metric_data_handaxe$Width_mm[41:53])
+shapiro.test(metric_data_handaxe$Length_mm[56:58])
+shapiro.test(metric_data_handaxe$Width_mm[56:58])
+shapiro.test(metric_data_handaxe$Length_mm[59:71])
+shapiro.test(metric_data_handaxe$Width_mm[59:71]) 
+shapiro.test(metric_data_handaxe$Length_mm[74:76])
+shapiro.test(metric_data_handaxe$Width_mm[74:76])
+shapiro.test(metric_data_handaxe$Length_mm[77:89])
+shapiro.test(metric_data_handaxe$Width_mm[77:89])
+
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[1:18,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[1:18,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[19:36,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[19:36,]))
+adonis(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[37:54,])
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[55:72,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[55:72,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[73:90,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_handaxe[73:90,]))
+
+metric_data_tanged <- arrange(metric_data_tanged, Artefact, Class)
+
+metric_data_tanged[1:18,]  %>% 
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[1:18,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[19:36,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[19:36,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[37:54,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[37:54,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[55:72,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[55:72,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[73:90,] %>%
+  group_by(Class) %>%
+  summarise(count = n(), mean = mean(Length_mm, na.rm = TRUE), sd = sd(Length_mm, na.rm = TRUE), min = min(Length_mm, na.rm = TRUE), max = max(Length_mm, na.rm = TRUE), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+metric_data_tanged[73:90,]  %>%
+  filter(Class=="Novice" | Class == "Intermediate" | Class == "Professional") %>%
+  summarise(count = n(), cv = sd(Length_mm, na.rm = TRUE)/mean(Length_mm, na.rm = TRUE)*100) %>%
+  dplyr::mutate_if(is.numeric, format, 1)
+
+shapiro.test(metric_data_tanged$Length_mm[2:4]) 
+shapiro.test(metric_data_tanged$Width_mm[2:4])
+shapiro.test(metric_data_tanged$Length_mm[5:17])
+shapiro.test(metric_data_tanged$Width_mm[5:17])
+shapiro.test(metric_data_tanged$Length_mm[20:22])
+shapiro.test(metric_data_tanged$Width_mm[20:22])
+shapiro.test(metric_data_tanged$Length_mm[23:35])
+shapiro.test(metric_data_tanged$Width_mm[23:35])
+shapiro.test(metric_data_tanged$Length_mm[38:40])
+shapiro.test(metric_data_tanged$Width_mm[38:40])
+shapiro.test(metric_data_tanged$Length_mm[41:53])
+shapiro.test(metric_data_tanged$Width_mm[41:53])
+shapiro.test(metric_data_tanged$Length_mm[56:58])
+shapiro.test(metric_data_tanged$Width_mm[56:58])
+shapiro.test(metric_data_tanged$Length_mm[59:71])
+shapiro.test(metric_data_tanged$Width_mm[59:71])
+shapiro.test(metric_data_tanged$Length_mm[74:76]) 
+shapiro.test(metric_data_tanged$Width_mm[74:76]) 
+shapiro.test(metric_data_tanged$Length_mm[77:89]) 
+shapiro.test(metric_data_tanged$Width_mm[77:89]) 
+
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[1:18,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[1:18,])) 
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[19:36,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[19:36,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[37:54,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[37:54,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[55:72,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[55:72,]))
+summary(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[73:90,]))
+summary.aov(manova(cbind(Length_mm, Width_mm) ~ Class, data = metric_data_tanged[73:90,]))
+```
+
+### **Concluding Remarks**
+
+For any queries, or for more information on any aspect of this markdown, please contact C.S.Hoggard@soton.ac.uk 
+
+### **Acknowledgments**  
+
+We thank Moesgaard Museum for loaning the artefacts used throughout this study. We would also like to thank all illustrators for their time during this experiment. CSH and FR thank the Independent Research Fund Denmark for grant #610700059B and FR also gratefully acknowledges funding the European Research Council (grant agreement 817564 under the Horizon 2020 research and innovation programme). We also thank John McNabb for comments on earlier drafts of this paper.
