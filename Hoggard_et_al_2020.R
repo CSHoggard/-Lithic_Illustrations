@@ -47,6 +47,9 @@ if(!require("vegan")) install.packages('vegan', repos='http://cran.us.r-project.
 if(!require("MASS")) install.packages('MASS', repos='http://cran.us.r-project.org') ### MASS 7.3-51.4
 if(!require("cowplot")) install.packages('cowplot', repos='http://cran.us.r-project.org') ### cowplot v.0.9.3
 if(!require("ggpubr")) install.packages('ggpubr', repos='http://cran.us.r-project.org') ### ggpubr v.0.2.4
+if(!require("rio")) install.packages('ggpubr', repos='http://cran.us.r-project.org') ### rio v.0.5.16
+if(!require("devtools")) install.packages('devtools', repos='http://cran.us.r-project.org') ### devtools v.2.3.1
+devtools::install_github("akiopteryx/lambda") ### LaMBDA v.0.1.0.9000
 
 library(psych) ### load the listed package
 library(geomorph) ### load the listed package
@@ -55,28 +58,23 @@ library(vegan) ### load the listed package
 library(MASS) ### load the listed package
 library(cowplot) ### load the listed package
 library(ggpubr) ### load the listed package
+library(LaMBDA) ### load the listed package
+library(rio) ### load the listed package
 
-landmarks_elongated   <- readland.tps("elongated.tps", readcurves = TRUE) ### landmark data for all elongated examples (safe to ignore rescaling issues)
-landmarks_tanged      <- readland.tps("tanged.tps", readcurves = TRUE)    ### landmark data for all tanged examples (safe to ignore rescaling issues)
-landmarks_handaxe     <- readland.tps("handaxe.tps", readcurves = TRUE)   ### landmark data for all handaxe examples (safe to ignore rescaling issues)
+landmarks_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_elongated.rds")
+landmarks_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_handaxe.rds")
+landmarks_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_tanged.rds")
+shape_data_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_elongated.rds")
+shape_data_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_tanged.rds")
+shape_data_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_handaxe.rds")
+metric_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/metric_data.rds")
+digitisation_error_landmarks <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks.rds")
+digitisation_error_landmarks_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks_data.rds")
+digitisation_error_metrics <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_metrics.rds")
 
-shape_data_elongated  <- read.csv("elongated.csv", header = TRUE, row.names = 1) ### classificatory data (elongated examples)
-shape_data_elongated$Artefact <- as.factor(shape_data_elongated$Artefact)
-shape_data_tanged     <- read.csv("tanged.csv", header = TRUE, row.names = 1) ### classificatory data (tanged examples)
-shape_data_tanged$Artefact    <- as.factor(shape_data_tanged$Artefact)
-shape_data_handaxe    <- read.csv("handaxe.csv", header = TRUE, row.names = 1) ### classificatory data (handaxe examples)
-shape_data_handaxe$Artefact   <- as.factor(shape_data_handaxe$Artefact)
-shape_data_sliders    <- read.csv("curveslide.csv", header = TRUE) ### slider file (prepared using geomorph)
-
-metric_data <- read.csv("measurement_data.csv", header = TRUE, row.names = 1) ### metric and classificatory data for all examples
-metric_data$Artefact <- as.factor(metric_data$Artefact)
-
-digitisation_error_landmarks  <- readland.tps("digitisation_error.tps", readcurves = TRUE) ### landmark data for a random example (five replicates)
-digitisation_error_landmarks_data <- read.csv("digitisation_error.csv", header = TRUE, row.names = 1) ### classification: illustration error
-
-digitisation_error_metrics  <- read.csv("measurement_error.csv", header = TRUE, row.names = 1) ### metric data for a random example (five replicates)
-digitisation_error_metrics$Attempt <- as.factor(digitisation_error_metrics$Attempt)
-
+lasec(two.d.array(landmarks_elongated), 2, iter = 500) # may take some time
+lasec(two.d.array(landmarks_tanged), 2, iter = 500) # may take some time
+lasec(two.d.array(landmarks_handaxe), 2, iter = 500) # may take some time
 
 ### stage 2: measuring intra-observor error ###
 
