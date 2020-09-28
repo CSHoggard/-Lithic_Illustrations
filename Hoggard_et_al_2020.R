@@ -71,6 +71,7 @@ metric_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/r
 digitisation_error_landmarks <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks.rds")
 digitisation_error_landmarks_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks_data.rds")
 digitisation_error_metrics <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_metrics.rds")
+shape_data_sliders <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_sliders.rds")
 
 lasec(two.d.array(landmarks_elongated), 2, iter = 500) # may take some time
 lasec(two.d.array(landmarks_tanged), 2, iter = 500) # may take some time

@@ -1,11 +1,9 @@
 ---
 title: '**Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses**'
-author: <h4 style="font-style:normal"> Christian Steven Hoggard, Thomas Birch, Cory
-  Marie Stade, Katrien Janin and Felix Riede </h4>
+author: Christian Steven Hoggard, Thomas Birch, Cory Marie Stade, Katrien Janin and Felix Riede
 output:
   html_document: default
   word_document: default
-  pdf_document: default
 ---
 <style>
 body {
@@ -23,36 +21,33 @@ Illustrations of lithic artefacts are an abundant source of morphological and te
   
 ### **Introduction**  
 
-This is a R Markdown documented associated with the article *Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses*, an original research article for *Archaeological and Anthropological Sciences* (https://link.springer.com/journal/12520). This Markdown document details the analytical procedure used throughout the article, from data importing and the packages used, to the univariate and multivariate framework underpinning the article's findings. 
+This is a R Markdown documented associated with the article *Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses*, original research for *The Journal of the Lithic Studies Society* (http://www.lithics.org/). This Markdown document details the analytical procedure used throughout the article, from data importing and the packages used, to the univariate and multivariate framework underpinning the article's findings. 
 
-### **Pre-requisite data**  
+### **Data files**  
 
-For this markdown, the following files are necessary:   
-1. **Hoggard_et_al_2019.r** (the r script which this .rmd accompanies)    
-2. **elongated.tps** (the raw landmark data file for elongated artefacts)    
-3. **handaxe.tps** (the raw landmark data file for handaxe artefacts)  
-4. **tanged.tps** (the raw landmark data file for tanged artefacts)  
-5. **elongated.csv** (metadata for all elongated artefacts)  
-6. **handaxe.csv** (metadata for all handaxe artefacts)  
-7. **tanged.csv**  (metadata for all tanged artefacts)  
-8. **measurement_data.csv** (the raw measurement data for all artefacts)  
-9. **digitisation_error.tps** (the raw landmark data file for digitisation error)  
-10. **digitisation_error.csv** (metadata for digitisation error)  
-11. **measurement_error.csv** (the measurement data for digitisation error)  
-12. **curveslide.csv** (the table of links for all landmarks)  
+For this markdown, a number of different files are necessary:   
+1. The three raw landmark files (for handaxe, tanged point and elongated artefacts), these are: **elongated.tps**, **handaxe.tps** and **tanged.tps**  
+2. The three data frames for the respective landmark files: **elongated.csv**, **handaxe.csv** and **tanged.csv**  
+3. The raw measurement length and width data for all artefacts: **measurement_data.csv**  
+4) The files necessary to investigate landmark digitisation error: **digitisation_error.tps** and **digitisation_error.csv**  
+5) The file necessary to investigate measurement error: **measurement_error.csv**  
+6) The table of links for all landmark configurations  **curveslide.csv**  
 
-A copy of all files can also be found on the Open Science Framework (OSF) project page [https://osf.io/xtghn/].  
+A copy of all files can also be found on GitHub [https://github.com/CSHoggard/-Lithic_Illustrations] and the Open Science Framework (OSF) [https://osf.io/xtghn/].  
 
 ### **Stage 1: Package installation and data extraction**  
 
-For this article, seven packages are required:  
+For this article, ten  packages are required:  
 1. **psych v.1.8.12**  https://cran.r-project.org/web/packages/psych/index.html  
 2. **geomorph v.3.1.2** https://cran.r-project.org/web/packages/geomorph/index.html  
-3. **tidyverse v.1.2.1** [https://cran.r-project.org/web/packages/tidyverse/index.html]   
-4. **vegan v.2.5-4** [https://cran.r-project.org/web/packages/vegan/index.html]    
-5. **MASS v.7.3-51.4** [https://cran.r-project.org/web/packages/MASS/index.html]   
-6. **cowplot v.0.9.3** [https://cran.r-project.org/web/packages/cowplot/index.html]  
+3. **tidyverse v.1.2.1** https://cran.r-project.org/web/packages/tidyverse/index.html  
+4. **vegan v.2.5-4** https://cran.r-project.org/web/packages/vegan/index.html    
+5. **MASS v.7.3-51.4** https://cran.r-project.org/web/packages/MASS/index.html   
+6. **cowplot v.0.9.3** https://cran.r-project.org/web/packages/cowplot/index.html 
 7. **ggpubr v.0.9.3**  https://cran.r-project.org/web/packages/ggpubr/index.html  
+8. **rio v.0.5.16**  https://cran.r-project.org/web/packages/rio/index.html  
+9. **LaMBDA v.0.1.0.9000** https://rdrr.io/github/akiopteryx/lambda/  
+10. **devtools v.2.3.1** https://cran.r-project.org/web/packages/devtools/index.html  
 
 The latest versions of each package can be installed and sourced through the following code:    
 
@@ -64,45 +59,56 @@ if(!require("vegan")) install.packages('vegan', repos='http://cran.us.r-project.
 if(!require("MASS")) install.packages('MASS', repos='http://cran.us.r-project.org')
 if(!require("cowplot")) install.packages('cowplot', repos='http://cran.us.r-project.org')
 if(!require("ggpubr")) install.packages('ggpubr', repos='http://cran.us.r-project.org')
-
+if(!require("rio")) install.packages('rio', repos='http://cran.us.r-project.org')
 ```
 
-Should specific functions become outdated then please refer to the package versions as cited above. Once all files are downloaded from the supplementary file or from the OSF project page, and a working directory (with these files) configured, insert these files into R/RStudio through the following code:  
+The LaMBDA package (LandMark-Based Data Assessment) is not on CRAN and requires downloading from GitHub (via the `devtools` package):    
 
 ```{r, echo = TRUE, eval = FALSE}
-landmarks_elongated   <- readland.tps("elongated.tps", readcurves = TRUE) #all specimens (elongated)
-landmarks_tanged      <- readland.tps("tanged.tps", readcurves = TRUE) #all specimens (tanged)
-landmarks_handaxe     <- readland.tps("handaxe.tps", readcurves = TRUE) #all specimens (handaxe)
+install.packages(“devtools”)
+devtools::install_github(“akiopteryx/lambda”)
+```
 
-shape_data_elongated <- read.csv("elongated.csv", header = TRUE, row.names = 1) #metadata (elongated)
-shape_data_elongated$Artefact <- as.factor(shape_data_elongated$Artefact) #convert from numeric to factor
+Should specific functions become outdated then please refer to the package versions as cited above. Once downloaded, activate all packages:
 
-shape_data_tanged <- read.csv("tanged.csv", header = TRUE, row.names = 1) #metadata (elongated)
-shape_data_tanged$Artefact <- as.factor(shape_data_tanged$Artefact) #convert from numeric to factor
+```{r, echo = TRUE, eval = TRUE, warning = FALSE}
+library(psych) ### load the listed package
+library(geomorph) ### load the listed package
+library(tidyverse) ### load the listed package
+library(vegan) ### load the listed package
+library(MASS) ### load the listed package
+library(cowplot) ### load the listed package
+library(ggpubr) ### load the listed package
+library(LaMBDA) ### load the listed package
+library(rio) ### load the listed package
+```
 
-shape_data_handaxe <- read.csv("handaxe.csv", header = TRUE, row.names = 1) #metadata (elongated)
-shape_data_handaxe$Artefact <- as.factor(shape_data_handaxe$Artefact) #convert from numeric to factor
+### **Stage 1: Bringing all files into the R Environment**  
 
-shape_data_sliders <- read.csv("curveslide.csv", header = TRUE) #landmark sliding matrix
+Given the large number of files required for the individual analyses (shape analysis, metric analysis, digitisation error and measurement error), and to prevent issues of working directories, all files are brought into the R Environment as .rds objects; these are objects which were imported into R and stored on GitHub (and downloaded when required). Using the `rio::import()` function allows all objects to be brought into the workspace.  
 
-metric_data <- read.csv("measurement_data.csv", header = TRUE, row.names = 1) #metric data (all specimens)
-metric_data$Artefact <- as.factor(metric_data$Artefact) #convert from numeric to factor
-
-digitisation_error_landmarks  <- readland.tps("digitisation_error.tps", readcurves = TRUE) #digitisation error
-digitisation_error_landmarks_data <- read.csv("digitisation_error.csv", header = TRUE, row.names = 1) #metadata
-
-digitisation_error_metrics  <- read.csv("measurement_error.csv", header = TRUE, row.names = 1) #measurement error
-digitisation_error_metrics$Attempt <- as.factor(digitisation_error_metrics$Attempt) #convert from numeric to factor
+```{r, echo = TRUE, eval = TRUE}
+landmarks_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_elongated.rds")
+landmarks_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_handaxe.rds")
+landmarks_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_tanged.rds")
+shape_data_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_elongated.rds")
+shape_data_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_tanged.rds")
+shape_data_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_handaxe.rds")
+metric_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/metric_data.rds")
+digitisation_error_landmarks <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks.rds")
+digitisation_error_landmarks_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks_data.rds")
+digitisation_error_metrics <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_metrics.rds")
+shape_data_sliders <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_sliders.rds")
 ```  
   
-### **Stage 2: Quantifying and measuring digitisation and measurement error**  
-  
+### **Stage 2: Acknowledging Error and Investigating Landmark Count**  
+
 ### **Stage 2A: Digitisation and Landmark Error**  
 
 The following code was necessary to calculate error associated with the digitisation of landmarks through a Procrustes ANOVA (see within the article for further information on the experimental setup).  
 
-```{r, echo = TRUE, eval = FALSE}
-gpa_digi_error <- gpagen(digitisation_error_landmarks, Proj = TRUE, curves =  shape_data_sliders, ProcD = TRUE, surfaces = NULL) #formulates a generalised procrustes analysis (GPA) file for digitised repeated specimens
+```{r, echo = TRUE, eval = TRUE}
+gpa_digi_error <- gpagen(digitisation_error_landmarks, Proj = TRUE, curves =  shape_data_sliders, ProcD = TRUE, surfaces = NULL) #formulates a generalised Procrustes analysis (GPA) file for digitised repeated specimens
 gpa_digi_error #calls the landmark configuration (GPA) created through the gpagen function
 plot(gpa_digi_error) #visualises the landmark configuration
 
@@ -125,6 +131,16 @@ statssf <- describe(digitisation_error_metrics$Scale_Factor) #descriptive statis
 (statsl$se/statsl$mean)   * 100 #fractional uncertainity (length)
 (statsw$se/statsw$mean)   * 100 #fractional uncertainity (width)
 (statssf$se/statssf$mean) * 100 #fractional uncertainity (scale factor: as calibrated through tpsDig2)
+```
+
+### **Stage 2C: Investigating Landmark Number**  
+
+The `LaMBDA::LaSEC()` function is used to assess the fidelity of morphological characterisation. This function helps the user to identify under- and over-sampling of landmarks, the robustness of the characterisation and determine how many landmarks can be removed without compromising the necessary shape information. A two-dimensional array of each landmark file was used, with 500 iterations, to determine if twenty landmarks were suitable.
+
+```{r, echo = TRUE, eval = FALSE}
+lasec(two.d.array(landmarks_elongated), 2, iter = 500) # may take some time
+lasec(two.d.array(landmarks_tanged), 2, iter = 500) # may take some time
+lasec(two.d.array(landmarks_handaxe), 2, iter = 500) # may take some time
 ```
  
 ### **Stage 3: Generalised Procrustes Analysis (GPA)**
