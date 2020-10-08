@@ -560,22 +560,28 @@ handaxe5ldaplotggplot <- ggplot(handaxe5ldaplot, aes(LD1, LD2)) +
         axis.title.y = element_text(size = 6),  
         axis.title.x = element_text(size = 6))
 
-plot_grid(elongated1ldaplotggplot, 
-          elongated2ldaplotggplot, 
-          elongated3ldaplotggplot, 
-          elongated4ldaplotggplot, 
-          elongated5ldaplotggplot, 
-          tanged1ldaplotggplot, 
-          tanged2ldaplotggplot, 
-          tanged3ldaplotggplot, 
-          tanged4ldaplotggplot, 
-          tanged5ldaplotggplot, 
-          handaxe1ldaplotggplot, 
-          handaxe2ldaplotggplot, 
-          handaxe3ldaplotggplot, 
-          handaxe4ldaplotggplot, 
-          handaxe5ldaplotggplot, 
-          ncol = 5, align = 'v')
+lda.figure <-  plot_grid(elongated1ldaplotggplot,
+                         elongated2ldaplotggplot,
+                         elongated3ldaplotggplot, 
+                         elongated4ldaplotggplot, 
+                         elongated5ldaplotggplot,
+                         tanged1ldaplotggplot, 
+                         tanged2ldaplotggplot, 
+                         tanged3ldaplotggplot, 
+                         tanged4ldaplotggplot, 
+                         tanged5ldaplotggplot,
+                         handaxe1ldaplotggplot,
+                         handaxe2ldaplotggplot,
+                         handaxe3ldaplotggplot,
+                         handaxe4ldaplotggplot,
+                         handaxe5ldaplotggplot,
+                         ncol = 5, align = 'v')
+
+lda.figure.legend <- get_legend(elongated1ldaplotggplot +
+                                  guides(color = guide_legend(nrow = 1)) +
+                                  theme(legend.position = "bottom"))
+
+plot_grid(lda.figure, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 
 ```
   
@@ -626,7 +632,7 @@ figure_8 <- plot_grid(figure_8a,
                       ncol = 1, 
                       align = 'v') 
 
-plot(figure_8)
+plot_grid(figure_8, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 
 ```
   
