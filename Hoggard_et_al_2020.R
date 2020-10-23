@@ -61,17 +61,17 @@ library(ggpubr) ### load the listed package
 library(LaMBDA) ### load the listed package
 library(rio) ### load the listed package
 
-landmarks_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_elongated.rds")
-landmarks_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_handaxe.rds")
-landmarks_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_tanged.rds")
-shape_data_elongated <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_elongated.rds")
-shape_data_tanged <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_tanged.rds")
-shape_data_handaxe <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_handaxe.rds")
-metric_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/metric_data.rds")
-digitisation_error_landmarks <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks.rds")
-digitisation_error_landmarks_data <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks_data.rds")
-digitisation_error_metrics <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_metrics.rds")
-shape_data_sliders <- rio::import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_sliders.rds")
+landmarks_elongated <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_elongated.rds")
+landmarks_handaxe <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_handaxe.rds")
+landmarks_tanged <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/landmarks_tanged.rds")
+shape_data_elongated <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_elongated.rds")
+shape_data_tanged <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_tanged.rds")
+shape_data_handaxe <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_handaxe.rds")
+metric_data <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/metric_data.rds")
+digitisation_error_landmarks <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks.rds")
+digitisation_error_landmarks_data <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_landmarks_data.rds")
+digitisation_error_metrics <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/digitisation_error_metrics.rds")
+shape_data_sliders <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_sliders.rds")
 
 ### stage 2: measuring intra-observor error ###
 
@@ -129,13 +129,13 @@ pca_handaxe <- gm.prcomp(gpa_handaxe$coords) ### pca (geomorph)
 pca_handaxe ### pca summary
 handaxe_ds <- cbind(shape_data_handaxe, pca_handaxe$x) ### tidyverse compatible format
 
-figure_5 <- ggplot(data = elongated_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
-figure_6 <- ggplot(data = tanged_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
-figure_7 <- ggplot(data = handaxe_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_4 <- ggplot(data = elongated_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_5 <- ggplot(data = tanged_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_6 <- ggplot(data = handaxe_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
 
-ggsave("Fig5.tiff", plot = figure_5, dpi = 300, units = "mm", height = 90, width = 120)
-ggsave("Fig6.tiff", plot = figure_6, dpi = 400, units = "mm", height = 90, width = 120)
-ggsave("Fig7.tiff", plot = figure_7, dpi = 400, units = "mm", height = 90, width = 120)
+ggsave("Fig4.tiff", plot = figure_5, dpi = 300, units = "mm", height = 90, width = 120)
+ggsave("Fig5.tiff", plot = figure_6, dpi = 400, units = "mm", height = 90, width = 120)
+ggsave("Fig6.tiff", plot = figure_7, dpi = 400, units = "mm", height = 90, width = 120)
 
 ### stage 5: analytical framework for the shape variables ###
 
@@ -515,7 +515,7 @@ metric_data_elongated <- metric_data[which(metric_data$Type=="Elongated"),]
 metric_data_handaxe   <- metric_data[which(metric_data$Type=="Handaxe"),]
 metric_data_tanged    <- metric_data[which(metric_data$Type=="Tanged"),]
 
-figure_8a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+figure_7a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") + 
@@ -525,7 +525,7 @@ figure_8a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Art
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) + 
+figure_7b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) + 
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") +  
@@ -535,7 +535,7 @@ figure_8b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefa
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+figure_7c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") +  
@@ -545,16 +545,16 @@ figure_8c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artef
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8 <- plot_grid(figure_8a, 
-                      figure_8b, 
-                      figure_8c, 
+figure_7 <- plot_grid(figure_7a, 
+                      figure_7b, 
+                      figure_7c, 
                       labels= "AUTO", 
                       ncol = 1, 
                       align = 'v') 
 
-plot_grid(figure_8, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
+plot_grid(figure_7, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 
-ggsave("Fig8.tiff", plot = last_plot(), dpi = 300, units = "mm", height = 150, width = 130)
+ggsave("Fig7.tiff", plot = last_plot(), dpi = 300, units = "mm", height = 150, width = 130)
 
 ### stage 7: analytical framework for the measurement data ###
 

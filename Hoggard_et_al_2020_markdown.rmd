@@ -595,7 +595,7 @@ metric_data_elongated <- metric_data[which(metric_data$Type=="Elongated"),]
 metric_data_handaxe   <- metric_data[which(metric_data$Type=="Handaxe"),]
 metric_data_tanged    <- metric_data[which(metric_data$Type=="Tanged"),]
 
-figure_8a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+figure_7a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") + 
@@ -605,7 +605,7 @@ figure_8a <- ggplot(metric_data_elongated, aes(Length_mm, Width_mm, colour = Art
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) + 
+figure_7b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) + 
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") +  
@@ -615,7 +615,7 @@ figure_8b <- ggplot(metric_data_tanged, aes(Length_mm, Width_mm, colour = Artefa
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
+figure_7c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artefact, shape = Class)) +
   geom_point() + 
   facet_grid(cols = vars(Artefact), scales = "free", labeller=label_both) + 
   labs(x = "Length (mm)", y = "Width (mm)") +  
@@ -625,14 +625,14 @@ figure_8c <- ggplot(metric_data_handaxe, aes(Length_mm, Width_mm, colour = Artef
         axis.text.y = element_blank(), 
         legend.position = "none")
 
-figure_8 <- plot_grid(figure_8a, 
-                      figure_8b, 
-                      figure_8c, 
+figure_7 <- plot_grid(figure_7a, 
+                      figure_7b, 
+                      figure_7c, 
                       labels= "AUTO", 
                       ncol = 1, 
                       align = 'v') 
 
-plot_grid(figure_8, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
+plot_grid(figure_7, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 
 ```
   
