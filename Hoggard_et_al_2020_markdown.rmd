@@ -18,7 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
   
 ### **Abstract**  
 
-Illustrations of lithic artefacts are an abundant source of morphological and technological information for those interested in our human past. As a typical part of archaeological reports and publications, lithic drawings are - or have to be - trusted as faithful reproductions of the selected artefacts. Despite the considerable epistemic work lithic illustrations (and illustrators) are expected to do, usually little information is available regarding the illustrator's technical skill; thus, it remains unknown whether drawings produced by illustrators of differing technical skill are comparable or produce images of equal analytical potential to other media, e.g. photographs. The issue of lithic illustration accuracy is brought to the fore by the recent emergence of geometric morphometric approaches as innovative and powerful ways of describing and analysing complex shapes, as lithic illustrations provide one of the key sources for such analyses. Motivated by these issues, we present an experiment investigating the degree of error observed in illustrations of differing technical illustrative skill. Analyses suggest that lithic illustrations produced by individuals with a variety of experience in drawing lithics create, in the majority of instances, equally faithful representations (in outline shape) of chipped stone artefacts. With error observed in a small number of instances, archaeologists are still urged to be critical of an illustration's source prior to lineal and geometric morphometric methodologies. Despite this, archaeologists can be confident in their exactitude and we remain strong advocates in favour of lithic illustrations as a readily available legacy resource for morphometric analyses.
+Illustrations of lithic artefacts are an abundant source of morphological and technological information for those interested in our human past, trusted as faithful reproductions of the selected artefacts in question. Despite the considerable epistemic work which lithic illustrations (and illustrators) are expected to do, usually little information is available regarding the illustrator’s technical skill; thus it remains unknown whether drawings produced by illustrators of differing technical skill are comparable, or produce images of equal analytical potential to other conventional forms of media including photographs. The issue of illustration faithfulness is brought to the fore by the recent emergence of geometric morphometric (GMM) approaches as innovative and powerful ways of describing and analysing complex shapes – and lithic illustrations provide one of the key sources for such analyses. Motivated by these issues, we present an experiment investigating the degree of error observed in illustrations (illustration-object accuracy) of differing technical illustrative skill. Initial analyses suggest that lithic illustrations, produced by individuals with a variety of experience in drawing lithics, create, in the majority of instances, faithful representations (in outline shape) of chipped stone artefacts when compared to other conventional methods. Despite this, error was observed in a small number of instances, and archaeologists are still urged to be critical of an illustration’s source prior to data analysis. Overall, archaeologists can be fairly confident in the exactitude of lithic illustrations produced following the creation of standardised illustrative conventions, and their suitability as a readily available legacy resource for morphometric analyses.
   
   
 ### **Introduction**  
@@ -87,7 +87,7 @@ library(LaMBDA) ### load the listed package
 library(rio) ### load the listed package
 ```
 
-### **Stage 1: Bringing all files into the R Environment**  
+### **Stage 2: Bringing all files into the R Environment**  
 
 Given the large number of files required for the individual analyses (shape analysis, metric analysis, digitisation error and measurement error), and to prevent issues of working directories, all files are brought into the R Environment as .rds objects; these are objects which were imported into R and stored on GitHub (and downloaded when required). Using the `rio::import()` function allows all objects to be brought into the workspace.  
 
@@ -105,11 +105,11 @@ digitisation_error_metrics <- import("https://github.com/CSHoggard/-Lithic_Illus
 shape_data_sliders <- import("https://github.com/CSHoggard/-Lithic_Illustrations/raw/master/shape_data_sliders.rds")
 ```  
   
-### **Stage 2: Sources of Error and Investigating Landmark Count**  
+### **Stage 3: Sources of Error and Investigating Landmark Count**  
 
-### **Stage 2A: Digitisation and Landmark Error**  
+### **Stage 3A: Digitisation and Landmark Error**  
 
-A Procrustes ANOVA (see in-text reference) was performed to calculate error associated with the digitisation of landmarks.   
+A Procrustes ANOVA (see in-text) was performed to calculate error associated with the digitisation of landmarks.   
 
 ```{r, echo = TRUE, eval = TRUE, message = FALSE}
 gpa_digi_error <- gpagen(digitisation_error_landmarks, Proj = TRUE, curves =  shape_data_sliders, ProcD = TRUE, surfaces = NULL, print.progress = FALSE) ### formulates a generalised Procrustes analysis (GPA) file for repeated specimens
@@ -122,7 +122,7 @@ summary(gpaprocD) ### summary
 gpaprocD$aov.table$SS[1]/gpaprocD$aov.table$SS[3]*100 ### error expressed as a percentage (8.599812%)
 ```
   
-### **Stage 2B: Measurement Error**
+### **Stage 3B: Measurement Error**
 
 To calculate error associated with lineal measurements fractional uncertainity (standard error divided by the mean) was calculated:  
 
@@ -137,7 +137,7 @@ statssf <- describe(digitisation_error_metrics$Scale_Factor) ### descriptive sta
 (statssf$se/statssf$mean) * 100 ### fractional uncertainity (scale factor: as calibrated through tpsDig2)
 ```
 
-### **Stage 2C: Investigating Landmark Number**  
+### **Stage 3C: Investigating Landmark Count**  
 
 The `LaMBDA::LaSEC()` function is used to assess the fidelity of morphological characterisation. This function helps the user to identify under- and over-sampling of landmarks, the robustness of the characterisation and determine how many landmarks can be removed without compromising the necessary shape information. A two-dimensional array of each landmark file was used, with 500 iterations, to determine if twenty landmarks were suitable. 500 iterations were used for the analysis, here 10 iterations are exemplified (for ease and speed):
 
@@ -147,7 +147,7 @@ lasec(two.d.array(landmarks_tanged), 2, iter = 10, show.progress = F) ### may ta
 lasec(two.d.array(landmarks_handaxe), 2, iter = 10, show.progress = F) ### may take some time
 ```
  
-### **Stage 3: Generalised Procrustes Analysis (GPA)**
+### **Stage 4: Generalised Procrustes Analysis (GPA)**
 
 With all errors calculated and deemed insignificant, we can now transform each artefact class through a GPA using the `geomorph::gpagen()` function as above:
 
@@ -162,7 +162,7 @@ gpa_handaxe <- gpagen(landmarks_handaxe, Proj = TRUE, ProcD = TRUE, curves = sha
 plot(gpa_handaxe) ### plots the procrustes coordinates for all handaxe artefacts
 ```
 
-### **Stage 4: Exploratory Analysis through Principal Component Analysis (PCA)**
+### **Stage 5: Exploratory Analysis through Principal Component Analysis (PCA)**
 
 Individual PCAs for all artefact classes were created to visualise differences in illustration skill between and within the different artefacts. PCAs were made in geomorph, through the `geomorph:gm.prcomp()` function, before being exported and modified (for better visualisation) in the tidyverse Note: specific shape differences can be calculated through the created files. The visualisations can then be exported through the `tidyverse:ggsave()` function. 
 
@@ -181,28 +181,28 @@ handaxe_ds <- cbind(shape_data_handaxe, pca_handaxe$x) ### tidyverse compatible 
 
 ggplot(elongated_ds) + 
   geom_point(aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 2) + 
-  labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/skill", colour = "Artefact") + 
+  labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/Skill", colour = "Artefact") + 
   scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
   scale_shape_manual(values=c(17,15,3,16)) +
   theme_minimal() ### figure 5 creation
 
 ggplot(tanged_ds) + 
   geom_point(aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 2) + 
-  labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/skill", colour = "Artefact") + 
+  labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/Skill", colour = "Artefact") + 
   scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
   scale_shape_manual(values=c(17,15,3,16)) + 
   theme_minimal() ### figure 6 creation
 
 ggplot(handaxe_ds) + 
   geom_point(aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 2) + 
-  labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/skill", colour = "Artefact") + 
+  labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/Skill", colour = "Artefact") + 
   scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  
   scale_shape_manual(values=c(17,15,3,16)) + 
   theme_minimal() ### figure 7 creation
 
 ```
 
-### **Stage 5: Further analysis (MANOVA and Discriminant Analysis)**
+### **Stage 6: Further analysis (MANOVA and Discriminant Analysis)**
 
 Each individual artefact (and the collections of drawings for each artefact) was then analysed to examine whether differences in illustrator skill were observed. This was first done through a Procrustes ANOVA, providing a statistical framework for detecting any such difference. Discriminant analyses were then conducted for each artefact to test for between-group variance. The code for each artefact follows this order:  
 
@@ -586,7 +586,7 @@ plot_grid(lda.figure, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 ```
   
   
-### **Stage 6: Measurement Data (Exploratory Framework)**
+### **Stage 7: Measurement Data (Exploratory Framework)**
 
 To first examine the metric data, bivariate plots for all three artefact groups were generated in ggplot:
 
@@ -636,7 +636,7 @@ plot_grid(figure_7, lda.figure.legend, ncol = 1, rel_heights = c(1, .1))
 
 ```
   
-### **Stage 7: Measurement Data (Analytical Framework)**
+### **Stage 8: Measurement Data (Analytical Framework)**
 
 ```{r, echo = TRUE, eval = TRUE}
 

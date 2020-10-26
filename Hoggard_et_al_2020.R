@@ -5,24 +5,25 @@
 ### EMAIL CONTACT: C.S.HOGGARD@SOTON.AC.UK ###
 ### OSF PAGE: https://osf.io/xtghn/ ###
 ### GITHUB: https://github.com/CSHoggard/-Lithic_Illustrations ###
-### LAST EDITED: 14/04/2020 ###
+### LAST EDITED: 26/10/2020 ###
 
 ### Abstract ###
 
-### Illustrations of lithic artefacts are an abundant source of morphological and technological information for those interested in
-### our human past. As a typical part of archaeological reports and publications, lithic drawings are - or have to be – trusted as 
-### faithful reproductions of the selected artefacts. Despite the considerable epistemic work lithic illustrations (and illustrators)
-### are expected to do, usually little information is available regarding the illustrator's technical skill; thus, it remains unknown
-### whether drawings produced by illustrators of differing technical skill are comparable or produce images of equal analytical 
-### potential to other media, e.g. photographs. The issue of lithic illustration accuracy is brought to the fore by the recent
-### mergence of geometric morphometric approaches as innovative and powerful ways of describing and analysing complex shapes, as
-### lithic illustrations provide one of the key sources for such analyses. Motivated by these issues, we present an experiment 
-### investigating the degree of error observed in illustrations of differing technical illustrative skill. Analyses suggest that 
-### lithic illustrations produced by individuals with a variety of experience in drawing lithics create, in the majority of instances,
-### equally faithful representations (in outline shape) of chipped stone artefacts. With error observed in a small number of 
-### instances, archaeologists are still urged to be critical of an illustration's source prior to lineal and geometric morphometric 
-### methodologies. Despite this, archaeologists can be confident in their exactitude and we remain strong advocates in favour of 
-### lithic illustrations as a readily available legacy resource for morphometric analyses. 
+### Illustrations of lithic artefacts are an abundant source of morphological and technological information
+### for those interested in our human past, trusted as faithful reproductions of the selected artefacts in question. 
+### Despite the considerable epistemic work which lithic illustrations (and illustrators) are expected to do, 
+### usually little information is available regarding the illustrator’s technical skill; thus it remains unknown whether
+### drawings produced by illustrators of differing technical skill are comparable, or produce images of equal analytical 
+### potential to other conventional forms of media including photographs. The issue of illustration faithfulness 
+### is brought to the fore by the recent emergence of geometric morphometric (GMM) approaches as innovative and powerful 
+### ways of describing and analysing complex shapes – and lithic illustrations provide one of the key sources for such analyses. 
+### Motivated by these issues, we present an experiment investigating the degree of error observed in illustrations (illustration-object accuracy) 
+### of differing technical illustrative skill. Initial analyses suggest that lithic illustrations, produced by individuals with a variety of experience
+### in drawing lithics, create, in the majority of instances, faithful representations (in outline shape) of chipped stone 
+### artefacts when compared to other conventional methods. Despite this, error was observed in a small number of instances, 
+### and archaeologists are still urged to be critical of an illustration’s source prior to data analysis. Overall, 
+### archaeologists can be fairly confident in the exactitude of lithic illustrations produced following the creation of 
+### standardised illustrative conventions, and their suitability as a readily available legacy resource for morphometric analyses.
 
 ### r session information ###
 
@@ -129,13 +130,13 @@ pca_handaxe <- gm.prcomp(gpa_handaxe$coords) ### pca (geomorph)
 pca_handaxe ### pca summary
 handaxe_ds <- cbind(shape_data_handaxe, pca_handaxe$x) ### tidyverse compatible format
 
-figure_4 <- ggplot(data = elongated_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
-figure_5 <- ggplot(data = tanged_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
-figure_6 <- ggplot(data = handaxe_ds) + geom_point(mapping = aes(x = PC1, y = PC2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_4 <- ggplot(data = elongated_ds) + geom_point(mapping = aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (45.816%)", y = "Principal Component 2 (24.298%)", shape = "Method/Skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_5 <- ggplot(data = tanged_ds) + geom_point(mapping = aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (50.805%)", y = "Principal Component 2 (33.926%)", shape = "Method/Skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
+figure_6 <- ggplot(data = handaxe_ds) + geom_point(mapping = aes(x = Comp1, y = Comp2, colour = Artefact, shape = Class), size = 1) + labs(x = "Principal Component 1 (84.840%)", y = "Principal Component 2 (6.987%)", shape = "Method/Skill", colour = "Artefact") + scale_color_manual(values=c("#e41a1c","#377eb8","#4daf4a","#984ea3","#ff7f00")) +  scale_shape_manual(values=c(17,15,3,16)) + theme_minimal() + theme(text = element_text(size=8))
 
-ggsave("Fig4.tiff", plot = figure_5, dpi = 300, units = "mm", height = 90, width = 120)
-ggsave("Fig5.tiff", plot = figure_6, dpi = 400, units = "mm", height = 90, width = 120)
-ggsave("Fig6.tiff", plot = figure_7, dpi = 400, units = "mm", height = 90, width = 120)
+ggsave("Fig4.tiff", plot = figure_4, dpi = 300, units = "mm", height = 90, width = 120)
+ggsave("Fig5.tiff", plot = figure_5, dpi = 400, units = "mm", height = 90, width = 120)
+ggsave("Fig6.tiff", plot = figure_6, dpi = 400, units = "mm", height = 90, width = 120)
 
 ### stage 5: analytical framework for the shape variables ###
 
