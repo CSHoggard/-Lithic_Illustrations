@@ -1,6 +1,6 @@
-This repository contains the data and code for our manuscript:
+This repository contains the data and code for the manuscript:
 
-Hoggard, C.S., Birch, T., Stade, C.M., Janin, K. & Riede, F. (XXXX). Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses.
+Hoggard, C.S., Birch, T., Stade, C.M., Janin, K. & Riede, F. (2020). Evaluating the Suitability of Lithic Illustrations in Morphometric Analyses.
     
 
 ### Licenses
